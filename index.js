@@ -1,5 +1,8 @@
 const TelegramBot = require('node-telegram-bot-api');
-const config = require('./config.json');
+const config = {
+  tokenBot: process.env.BOT_TOKEN,
+  keyAPI: process.env.KEY_API
+};
 const https = require('https');
 // ... kod davom ettiriladi (sizlik yuborgan matn)
 

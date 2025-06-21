@@ -1,5 +1,3 @@
-
-# Exported from Render
 services:
 - type: web
   name: Kino_bot

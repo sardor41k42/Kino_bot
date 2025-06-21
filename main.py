@@ -2,82 +2,82 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent, Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler, CallbackContext
 import uuid
 
-# Token va admin ID
 TOKEN = "7485332977:AAEK79wCat0v0_6zim08bH6gV9wpy54ZIc0"
 ADMIN_ID = 6689677013
 
-# Baza
-kino_baza = {}  # {'kino nomi': 'link'}
+# kino_baza = {"kalit": {"nom": "...", "link": "..."}}
+kino_baza = {}
 foydalanuvchilar = set()
 
-# /start
 def start(update: Update, context: CallbackContext):
-    foydalanuvchilar.add(update.message.chat_id)
-    update.message.reply_text("🎬 Salom! Kino nomini yuboring yoki @KINO_QIDIRUV_UZB_BOT orqali izlang.")
+    foydalanuvchilar.add(update.message.chat.id)  # chat_id o‘rniga chat.id
+    update.message.reply_text("🎬 Kino nomi yoki kodi yuboring.")
 
-# Kino qo‘shish
 def add(update: Update, context: CallbackContext):
     if update.message.from_user.id != ADMIN_ID:
         return update.message.reply_text("⛔ Siz admin emassiz.")
     try:
-        matn = update.message.text.replace("/add ", "")
-        nom, link = matn.split("=")
-        kino_baza[nom.strip().lower()] = link.strip()
-        update.message.reply_text(f"✅ Kino qo‘shildi: {nom.strip()}")
-    except:
-        update.message.reply_text("❗ Format noto‘g‘ri. Misol: /add Avatar=https://link")
+        matn = update.message.text.replace("/add ", "", 1)
+        nom, qolgani = matn.split("=")
+        if "|" in qolgani:
+            link, kod = qolgani.split("|")
+            kalitlar = [nom.strip().lower(), kod.strip().upper()]
+        else:
+            link = qolgani
+            kalitlar = [nom.strip().lower()]
+        for kalit in kalitlar:
+            kino_baza[kalit] = {"nom": nom.strip(), "link": link.strip()}
+        update.message.reply_text(f"✅ Qo‘shildi: {nom.strip()}")
+    except Exception as e:
+        update.message.reply_text("❗ Format: /add Avatar=https://link | AVT123\nXato: " + str(e))
 
-# Kino qidirish
 def qidir(update: Update, context: CallbackContext):
-    text = update.message.text.lower()
-    javob = kino_baza.get(text)
-    if javob:
-        update.message.reply_text(f"🎬 {text.title()}\n▶️ {javob}")
+    text = update.message.text.strip().lower()
+    kino = kino_baza.get(text)
+    if kino:
+        update.message.reply_text(f"🎬 {kino['nom']}\n▶️ {kino['link']}")
     else:
-        update.message.reply_text("❌ Bunday kino topilmadi.")
+        update.message.reply_text("❌ Topilmadi. Kino nomi yoki kodini tekshiring.")
 
-# Kino ro‘yxati
 def list_kino(update: Update, context: CallbackContext):
     if kino_baza:
-        javob = "\n".join([f"🎬 {k}" for k in kino_baza.keys()])
-        update.message.reply_text(f"📃 Barcha kinolar:\n{javob}")
+        nomlar = set(k["nom"] for k in kino_baza.values())
+        ro_yxat = "\n".join([f"🎬 {n}" for n in nomlar])
+        update.message.reply_text(f"📃 Barcha kinolar:\n{ro_yxat}")
     else:
         update.message.reply_text("📭 Kino bazasi bo‘sh.")
 
-# Admin panel
 def panel(update: Update, context: CallbackContext):
     if update.message.from_user.id != ADMIN_ID:
         return update.message.reply_text("⛔ Siz admin emassiz.")
-    kinolar_soni = len(kino_baza)
-    user_soni = len(foydalanuvchilar)
-    update.message.reply_text(f"📊 Statistika:\n👥 Foydalanuvchilar: {user_soni}\n🎞 Kinolar: {kinolar_soni}")
+    update.message.reply_text(
+        f"📊 Statistika:\n👥 Foydalanuvchilar soni: {len(foydalanuvchilar)}\n🎞 Kinolar soni: {len(set(k['nom'] for k in kino_baza.values()))}"
+    )
 
-# Inline query
 def inlinequery(update: Update, context: CallbackContext):
-    query = update.inline_query.query.lower()
+    query = update.inline_query.query.strip().lower()
     results = []
-    for nom, link in kino_baza.items():
-        if query in nom:
+    for kalit, data in kino_baza.items():
+        if query in kalit:
             results.append(
                 InlineQueryResultArticle(
                     id=str(uuid.uuid4()),
-                    title=nom.title(),
-                    input_message_content=InputTextMessageContent(f"🎬 {nom.title()}\n▶️ {link}")
+                    title=data["nom"],
+                    input_message_content=InputTextMessageContent(f"🎬 {data['nom']}\n▶️ {data['link']}")
                 )
             )
+        if len(results) >= 10:  # inline javoblarni 10 ta bilan cheklash
+            break
     update.inline_query.answer(results)
 
-# Yozuvlar
+# Botni ishga tushirish
 updater = Updater(TOKEN, use_context=True)
 dp = updater.dispatcher
 
-# Komandalar
 dp.add_handler(CommandHandler("start", start))
 dp.add_handler(CommandHandler("add", add))
 dp.add_handler(CommandHandler("panel", panel))
 dp.add_handler(CommandHandler("list", list_kino))
-
-# Xabarlar
 dp.add_handler(MessageHandler(Filters.text & ~Filters.command, qidir))
 dp.add_handler(InlineQueryHandler(inlinequery))
 

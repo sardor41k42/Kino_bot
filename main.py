@@ -2,8 +2,8 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
 
-TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID"))
+TOKEN = os.getenv("7485332977:AAEK79wCat0v0_6zim08bH6gV9wpy54ZIc0")
+ADMIN_ID = int(os.getenv("6689677013"))
 
 kino_baza = {}
 

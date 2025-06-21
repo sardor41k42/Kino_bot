@@ -10,14 +10,14 @@ kino_baza = {}
 foydalanuvchilar = set()
 
 def start(update: Update, context: CallbackContext):
-    foydalanuvchilar.add(update.message.chat.id)  # chat_id o‘rniga chat.id
+    foydalanuvchilar.add(update.message.chat_id)
     update.message.reply_text("🎬 Kino nomi yoki kodi yuboring.")
 
 def add(update: Update, context: CallbackContext):
     if update.message.from_user.id != ADMIN_ID:
         return update.message.reply_text("⛔ Siz admin emassiz.")
     try:
-        matn = update.message.text.replace("/add ", "", 1)
+        matn = update.message.text.replace("/add ", "")
         nom, qolgani = matn.split("=")
         if "|" in qolgani:
             link, kod = qolgani.split("|")
@@ -28,8 +28,8 @@ def add(update: Update, context: CallbackContext):
         for kalit in kalitlar:
             kino_baza[kalit] = {"nom": nom.strip(), "link": link.strip()}
         update.message.reply_text(f"✅ Qo‘shildi: {nom.strip()}")
-    except Exception as e:
-        update.message.reply_text("❗ Format: /add Avatar=https://link | AVT123\nXato: " + str(e))
+    except:
+        update.message.reply_text("❗ Format: /add Avatar=https://link | AVT123")
 
 def qidir(update: Update, context: CallbackContext):
     text = update.message.text.strip().lower()
@@ -42,17 +42,15 @@ def qidir(update: Update, context: CallbackContext):
 def list_kino(update: Update, context: CallbackContext):
     if kino_baza:
         nomlar = set(k["nom"] for k in kino_baza.values())
-        ro_yxat = "\n".join([f"🎬 {n}" for n in nomlar])
-        update.message.reply_text(f"📃 Barcha kinolar:\n{ro_yxat}")
+        ro‘yxat = "\n".join([f"🎬 {n}" for n in nomlar])
+        update.message.reply_text(f"📃 Barcha kinolar:\n{ro‘yxat}")
     else:
         update.message.reply_text("📭 Kino bazasi bo‘sh.")
 
 def panel(update: Update, context: CallbackContext):
     if update.message.from_user.id != ADMIN_ID:
         return update.message.reply_text("⛔ Siz admin emassiz.")
-    update.message.reply_text(
-        f"📊 Statistika:\n👥 Foydalanuvchilar soni: {len(foydalanuvchilar)}\n🎞 Kinolar soni: {len(set(k['nom'] for k in kino_baza.values()))}"
-    )
+    update.message.reply_text(f"📊 Statistika:\n👥 Foydalanuvchi: {len(foydalanuvchilar)}\n🎞 Kinolar: {len(set(k['nom'] for k in kino_baza.values()))}")
 
 def inlinequery(update: Update, context: CallbackContext):
     query = update.inline_query.query.strip().lower()
@@ -66,11 +64,9 @@ def inlinequery(update: Update, context: CallbackContext):
                     input_message_content=InputTextMessageContent(f"🎬 {data['nom']}\n▶️ {data['link']}")
                 )
             )
-        if len(results) >= 10:  # inline javoblarni 10 ta bilan cheklash
-            break
     update.inline_query.answer(results)
 
-# Botni ishga tushirish
+# Registratsiya
 updater = Updater(TOKEN, use_context=True)
 dp = updater.dispatcher
 

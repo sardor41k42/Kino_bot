@@ -1,4 +1,3 @@
-
 from telegram.ext import Updater, CommandHandler
 
 TOKEN = "7485332977:AAEK79wCat0v0_6zim08bH6gV9wpy54ZIc0"

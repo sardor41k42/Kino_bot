@@ -3,7 +3,7 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent, Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler, CallbackContext
 import uuid
 
-TOKEN = "YOUR_BOT_TOKEN_HERE"
+TOKEN = "7485332977:AAEK79wCat0v0_6zim08bH6gV9wpy54ZIc0"
 ADMIN_ID = 6689677013
 
 kino_baza = {}
